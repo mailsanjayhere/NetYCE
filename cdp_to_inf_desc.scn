@@ -1,0 +1,12 @@
+# Fetch the interface and neighbor information
+<%cdp> := Parse_cmd -n <node> -r "show cdp neigh detail \| i Device\|Interface" -t show_cdp_detail
+<nbrs> := keys <%cdp>
+
+# Create config that needs to be applied to the device
+foreach <nbr> in <nbrs>
+	log -m "<nbr> and <<nbr>.loc_inf%cdp>"
+    config_create -n <node> -f <node>.cfg -t inf_desc -x
+endeach
+
+# Apply the configuration on the device
+cmd_exec_basic -n <node> -a <node_addr> -d <domain> -v <vendor_type> -f <node>.cfg
