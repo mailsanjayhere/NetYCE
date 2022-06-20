@@ -5,7 +5,10 @@
 # Create config that needs to be applied to the device
 foreach <nbr> in <nbrs>
 	log -m "<nbr> and <<nbr>.loc_inf%cdp>"
-    config_create -n <node> -f <node>.cfg -t inf_desc -x
+    config_create -n <node> -f <node>.cfg -x <<EOT
+    interface <<nbr>.loc_inf%cdp>
+ description Connected to <<nbr>.rem_name%cdp> on <<nbr>.rem_inf%cdp>
+ EOT
 endeach
 
 # Apply the configuration on the device
