@@ -1,0 +1,5 @@
+# <webhook> is defined under the Domain's custom variable 
+Description <node> Notify Slack 
+  
+# signal_json -t slack_test -p "text='Job successful on <node>'" -n <node>
+script_exec -i python3  -s "/var/opt/yce/download/scripts/slack_webhook.py" -o <webhook> -o <slack_msg>
