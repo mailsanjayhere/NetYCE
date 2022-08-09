@@ -1,0 +1,19 @@
+stop on-error
+  
+#Fetches the policy id 
+<policy_id> = db_query -f Policy_id -t NCCM.Cmpl_policy -w 'Policy_name="<pol_name>"'
+log -m "Policy ID: <policy_id>"
+
+#Fetches the hostnames of all the nodes that are non-compliant
+<hostnames> = db_query -f Hostname -t NCCM.Cmpl_node -w 'Policy_ID=<policy_id> and Status="0"'
+
+# Creating the configs for non-compliant nodes..
+foreach <h> in <hostnames>
+	log -m "hostname: <h> is non-compliant"
+    config_create -n <node> -f config_for_<h>.cfg -t <pol_cmd>
+#    <dom> = relation -n <node> -r cmdb_nodes -v Domain
+#    <ven> = relation -n <node> -r cmdb_nodes -v Vendor_type
+#    Cmd_exec_basic -n <h> -a "[Node_mgmt_ipv4(<hostname>)]" -v <vendor_type> -d <domain> -f config_for_<h>.cfg <verbose>
+endeach
+
+resched_job -i 2w
