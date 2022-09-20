@@ -1,3 +1,5 @@
+# Hostname is the input for this file.. 
+# This file would fetch the configuration and then look for any lines that don't have snmp community on it..
 import sys
 import re
 
