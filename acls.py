@@ -1,3 +1,6 @@
+# This script looks for the standard/extended acls, prefix-lists.
+# Lists out them if they are used or not used...
+# If they are called and not created yet.. will notify those as well
 import sys
 
 host = sys.argv[1]
