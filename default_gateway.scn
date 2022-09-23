@@ -1,0 +1,24 @@
+# Determine the defaulty nexthop of a node and verify it is using the hsrp ip and not the physical interface address
+<%cmd1> = Parse_cmd -n <node> -r "show run | i ip route 0.0.0.0 0.0.0.0" -t default_route
+<gw> = <gw%cmd1>
+
+if <gw>
+  <text1> = "standby _ ip <gw>"
+  <nodes> = relation -n <node> -r find_config -v Nodename -p "text=<text1>"
+  if <nodes>
+    <cmpl_status> = "Yes"
+  else
+    <text2> = "ip address <gw>"
+    <nodes> = relation -n <node> -r find_config -v Nodename -p "text=<text2>"
+    # Script to determine if hsrp is configured for the interface..
+    if <nodes>
+      <cmpl_status> = script_exec -s /home/yce/if_hsrp.py -o <node> -o <gw>
+    else
+      <cmpl_status> = "NA"
+    endif
+  endif
+else
+ <cmpl_status> = "Yes"
+endif
+
+db_update -t NMS.Custom_cmpl  -p 'Status=<cmpl_status>' -w 'Hostname="<node>" AND Policy_name="Default gateway"'
