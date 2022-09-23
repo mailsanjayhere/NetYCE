@@ -1,0 +1,5 @@
+# Determine the compliancy status of a policy
+# Policy name :  <pol_name>
+# Nodename : <node>
+<policy_id> = db_query -f Policy_id -t NCCM.Cmpl_policy -w 'Policy_name="<pol_name>"'
+<status> = db_query -f Status -t NCCM.Cmpl_node -w 'Policy_ID=<policy_id> and Hostname="<node>"'
