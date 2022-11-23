@@ -1,4 +1,5 @@
 # usage: python3 analyze.py syslog-ng.log yce_events.log.4  
+# Used to compare syslog-ng.log and yce_events.log file.. gives us the list of syslog messages, for which the event is not generated
 import sys
 # syslog file
 file1 = sys.argv[1]
