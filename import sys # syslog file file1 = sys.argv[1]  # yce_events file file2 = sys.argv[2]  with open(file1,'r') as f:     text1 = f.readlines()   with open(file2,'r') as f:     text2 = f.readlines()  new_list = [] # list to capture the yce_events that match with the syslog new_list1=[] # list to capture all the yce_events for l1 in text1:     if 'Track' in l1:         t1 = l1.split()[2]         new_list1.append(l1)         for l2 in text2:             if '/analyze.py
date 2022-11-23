@@ -1,3 +1,5 @@
+#usage : python3 analyze.py syslog-ng.log yce_events.log.4
+# Gives the difference between the yce_events and syslog-ng log file.. all the syslog entries for which the yce_events are missed.. assesed based on time of the event..
 import sys
 # syslog file
 file1 = sys.argv[1]
