@@ -30,17 +30,31 @@ def {name}(configuration, commands, device):
 # References: {ref}
 '''
     
-    # Create the folder if it doesn't exist
-    os.makedirs(folder_name, exist_ok=True)
-    
+    # Create the "tests" folder if it doesn't exist
+    tests_folder = "tests"
+    os.makedirs(tests_folder, exist_ok=True)
+
+    # Create the folder for the current test if it doesn't exist
+    os.makedirs(os.path.join(tests_folder, folder_name), exist_ok=True)
+
     # Build the file path within the folder
-    file_path = os.path.join(folder_name, f"{name}.py")
+    file_path = os.path.join(tests_folder, folder_name, f"{name}.py")
     
     # Write the test content to the file within the folder
     with open(file_path, 'w') as file:
         file.write(test_content)
     
     print(f"Test written to {name}.py in {file_path}")
+
+
+def remove_space_before_hyphen(input_string):
+    # Define a regular expression pattern to match the specified pattern
+    pattern = r'(\s-)([a-zA-Z])'
+
+    # Use re.sub to remove the space before the hyphen
+    modified_string = re.sub(pattern, r'-\2', input_string)
+    return modified_string
+
 
 # Define a function to convert text to a rule name
 def convert_to_rule_format(text):
@@ -91,14 +105,14 @@ with open('cis_cisco.pdf', 'rb') as pdfFileObj:
                     config_pattern = ""
                     ref = ""
                 
-                name = convert_to_rule_format(line)
+                name = remove_space_before_hyphen(convert_to_rule_format(line))
                 if re.match(r"rule_\d{2}_\w+", name):
                     folder_name = re.sub(r"rule_\d{2}_", "", name)
             if re.search(hostname_config_pattern, line):
-                config_pattern = line
+                config_pattern = remove_space_before_hyphen(line)
             if re.search(hostname_show_pattern, line):
-                show_pattern = line
+                show_pattern = remove_space_before_hyphen(line)
             if re.search(severity, line):
-                level = line
+                level = remove_space_before_hyphen(line)
             if re.search(ref_pattern, line):
-                ref = line
+                ref = remove_space_before_hyphen(line)
