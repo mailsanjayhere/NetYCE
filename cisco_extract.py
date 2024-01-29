@@ -66,7 +66,7 @@ page_pattern = r"Page\s+(\d+)\s+(\d+(?:\.\d+)*\s+.+)"
 hostname_config_pattern = r"hostname\(config\)#"
 hostname_show_pattern = r"hostname#show"
 severity = r"•  Level"
-ref_pattern = r" http://"
+ref_pattern = r" https?://"
 
 name = ""
 level = ""
@@ -93,7 +93,7 @@ with open('cis_cisco.pdf', 'rb') as pdfFileObj:
                 
                 name = convert_to_rule_format(line)
                 if re.match(r"rule_\d{2}_\w+", name):
-                    folder_name = name
+                    folder_name = re.sub(r"rule_\d{2}_", "", name)
             if re.search(hostname_config_pattern, line):
                 config_pattern = line
             if re.search(hostname_show_pattern, line):
