@@ -78,7 +78,7 @@ def convert_to_rule_format(text):
 # Define text patterns to search for in the PDF
 page_pattern = r"Page\s+(\d+)\s+(\d+(?:\.\d+)*\s+.+)"
 hostname_config_pattern = r"hostname\(config\)#"
-hostname_show_pattern = r"hostname#show"
+hostname_show_pattern = r"hostname#sh"
 severity = r"•  Level"
 ref_pattern = r" https?://"
 
@@ -88,16 +88,24 @@ show_pattern = ""
 config_pattern = ""
 ref = ""
 folder_name = "default"
+show_run_pattern=["hostname#show running-config | incl ","hostname#show run ning-config | inc ","hostname#sh run | incl ","hostname#show running-config | inc","hostname#show run | i "]
 
-# Open the PDF file
+# Open the  PDF file
 with open('cis_cisco.pdf', 'rb') as pdfFileObj:
     for i in range(14, 214):  # Loop through pages
         pdfReader = PyPDF2.PdfReader(pdfFileObj)
         pageObj = pdfReader.pages[i]
-        
+
         for line in pageObj.extract_text().splitlines():
+# Reference URLs are broken lines in PDF, below two lines is to concatenate them in single line and cleaning up spaces
+            if ref.endswith("-"):
+                ref+=line.strip()
             if re.search(page_pattern, line):
                 if name != "" and level != "":
+                    ref=ref.replace(" ","")
+                    for patt in show_run_pattern:
+                      if patt in show_pattern:
+                        show_pattern = show_pattern.replace(patt,"")
                     build_test(level, name, show_pattern, config_pattern, ref, folder_name)
                     name = ""
                     level = ""
