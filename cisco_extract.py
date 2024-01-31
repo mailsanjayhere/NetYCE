@@ -15,7 +15,29 @@ def build_test(level, name, text, config_to_mitigate, ref, folder_name):
         text = text.replace(t, "").strip()
     
     # Define the test content template
-    test_content = f'''import pytest
+    if "#sh" in text:
+        if "incl" in text:
+            assert_text = text.split('incl')[1]
+        elif "beg" in text:
+            assert_text = text.split('beg')[1]
+        elif "sec" in text:
+            assert_text = text.split('sec')[1]
+        else:
+            assert_text = text
+        text=text.replace("hostname#","")
+        test_content = f'''import pytest
+from comfy.compliance import *
+
+@{sev}(
+  name = '{name}',
+  platform = ['cisco_ios'],
+  commands=dict(check_command='{text}')
+)
+def {name}(configuration, commands, device):
+    assert f'{assert_text}' in commands.check_command,"\\n# Remediation: {config_to_mitigate}\\n# References: {ref}\\n\\n"
+'''
+    else:
+        test_content = f'''import pytest
 from comfy.compliance import *
 
 @{sev}(
@@ -23,11 +45,7 @@ from comfy.compliance import *
   platform = ['cisco_ios']
 )
 def {name}(configuration, commands, device):
-    assert '{text}' in configuration
-
-# Remediation: {config_to_mitigate}
-
-# References: {ref}
+    assert '{text}' in configuration,"\\n# Remediation: {config_to_mitigate}\\n# References: {ref}\\n\\n"
 '''
     
     # Create the "tests" folder if it doesn't exist
@@ -88,7 +106,7 @@ show_pattern = ""
 config_pattern = ""
 ref = ""
 folder_name = "default"
-show_run_pattern=["hostname#show running-config | incl ","hostname#show run ning-config | inc ","hostname#sh run | incl ","hostname#show running-config | inc","hostname#show run | i "]
+show_run_pattern=["hostname#show running-config | incl ","hostname#show run ning-config | inc ","hostname#sh run | incl ","hostname#show running-config | inc","hostname#show run | i ","hostname#show run | include"]
 
 # Open the  PDF file
 with open('cis_cisco.pdf', 'rb') as pdfFileObj:
@@ -115,7 +133,7 @@ with open('cis_cisco.pdf', 'rb') as pdfFileObj:
                 
                 name = remove_space_before_hyphen(convert_to_rule_format(line))
                 if re.match(r"rule_\d{2}_\w+", name):
-                    folder_name = re.sub(r"rule_\d{2}_", "", name)
+                    folder_name = re.sub(r"rule_", "", name)
             if re.search(hostname_config_pattern, line):
                 config_pattern = remove_space_before_hyphen(line)
             if re.search(hostname_show_pattern, line):
