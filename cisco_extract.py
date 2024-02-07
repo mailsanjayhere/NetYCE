@@ -6,8 +6,8 @@ import os
 # Define a function to build and write a test
 def build_test(level, name, text, config_to_mitigate, ref, folder_name):
     ref = ref.strip().replace("1.", " ").replace("2.", " ").replace(" ", "")
-    ref1 = ref[:94]  # First 100 characters
-    ref2 = ref[94:]  # The rest of the characters
+    ref1 = ref[:90]  # First 100 characters
+    ref2 = ref[90:]  # The rest of the characters
     config_to_mitigate = config_to_mitigate.replace("\\_", "_")
     if config_to_mitigate == "":
         config_to_mitigate = "-"
@@ -46,11 +46,11 @@ def {name}(commands):
     )
 
     remediation = (f"""
-        Remediation: {config_to_mitigate}
+    Remediation: {config_to_mitigate}
 
-        References: {{uri}}
+    References: {{uri}}
 
-        """)
+    """)
 
     assert '{assert_text}' in commands.chk_cmd, remediation
 '''
@@ -69,11 +69,11 @@ def {name}(configuration):
     )
 
     remediation = (f"""
-        Remediation: {config_to_mitigate}
+    Remediation: {config_to_mitigate}
 
-        References: {{uri}}
+    References: {{uri}}
 
-        """)
+    """)
 
     assert '{text}' in configuration, remediation
 '''
