@@ -34,41 +34,28 @@ def build_test(level, name, text, config_to_mitigate, ref, folder_name):
         test_content = f'''from comfy.compliance import {sev}
 
 
-uri = (
-    "{ref1}"
-    "{ref2}"
-)
-
-remediation = (f"""
-    Remediation: {config_to_mitigate}
-
-    References: {{uri}}
-
-    """)
-
-
 @{sev}(
   name='{name}',
   platform=['cisco_ios', 'cisco_xe'],
   commands=dict(chk_cmd='{text}')
 )
 def {name}(commands):
+    uri = (
+        "{ref1}"
+        "{ref2}"
+    )
+
+    remediation = (f"""
+        Remediation: {config_to_mitigate}
+
+        References: {{uri}}
+
+        """)
+
     assert '{assert_text}' in commands.chk_cmd, remediation
 '''
     else:
         test_content = f'''from comfy.compliance import {sev}
-
-uri = (
-    "{ref1}"
-    "{ref2}"
-)
-
-remediation = (f"""
-    Remediation: {config_to_mitigate}
-
-    References: {{uri}}
-
-    """)
 
 
 @{sev}(
@@ -76,6 +63,18 @@ remediation = (f"""
   platform=['cisco_ios', 'cisco_xe']
 )
 def {name}(configuration):
+    uri = (
+        "{ref1}"
+        "{ref2}"
+    )
+
+    remediation = (f"""
+        Remediation: {config_to_mitigate}
+
+        References: {{uri}}
+
+        """)
+
     assert '{text}' in configuration, remediation
 '''
 
