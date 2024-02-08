@@ -124,6 +124,14 @@ def convert_to_rule_format(text):
     return rule_name
 
 
+def fix_typo(text):
+    if "l ogin" in text:
+        text = text.replace("l ogin", "login")
+    if "aa a" in text:
+        text = text.replace("aa a", "aaa")
+    return text
+
+
 # Define text patterns to search for in the PDF
 page_pattern = r"Page\s+(\d+)\s+(\d+(?:\.\d+)*\s+.+)"
 # Regex to match 'Hostname' or 'hostname' or 'hostname(config)#' or
@@ -159,6 +167,7 @@ with open('cis_cisco.pdf', 'rb') as pdfFileObj:
                     for patt in show_run_pattern:
                         if patt in show_pattern:
                             show_pattern = show_pattern.replace(patt, "")
+                    show_pattern = fix_typo(show_pattern)
                     build_test(level, name, show_pattern, config_pattern, ref, folder_name)
                     name = ""
                     level = ""
