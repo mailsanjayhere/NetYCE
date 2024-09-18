@@ -53,4 +53,3 @@ else
   stop
 endif
 #Cmd_exec_basic -n <node> -a <node_addr> -v <vendor_type> -d <domain> -f <node>.cmd <verbose>
-`
