@@ -1,55 +1,94 @@
 reachable -n <node>
 if <error>
-  stop
   log -m "Node is not reachable"
+  <sub> = "Node is not reachable..."
+  task = sendmail_new
+  stop
 endif
+ 
 <os_file> = os_files -v <Vendor_type> -t <Node_model>
+<%os_file> := os_file_select -v <Vendor_type> -n <os_file>
+<md5> = <File_crc%os_file>
+<File_size> = <File_size%os_file>
 <%os_image> := os_image_select -v <vendor_type> -t <Node_model>
 <os_version> = <Os_version%os_image>
 <os_path> = <Os_path%os_image>
-<%os_file> := os_file_select -v <Vendor_type> -n <os_file>
-<md5_netyce_file> = <File_crc%os_file>
-<File_size> = <File_size%os_file>
-
+ 
 # Verify the current OS version
 <%cmd1> = parse_cmd -n <node> -r "show version | i Version" -t software_version
 <s_w> = <s_w%cmd1>
-
+ 
 if <s_w> == <os_version>
   log -m "OS is already upgraded, aborting the job"
   stop
 endif
-
-# Verify if the file exists
-<%cmd2> = parse_cmd -n <node> -r "dir | i <os_file>" -t parse_file_exists
-<file_name2> = <f%cmd2>
-
-if <file_name2> == <os_file>
-  log -m "File already exists.. skipping copying, proceeding with md5 check"
-else
+<%cmd1> = parse_cmd -n <node> -r "dir | i <os_file>" -t parse_file_exists
+<file_name1> = <f%cmd1>
+ 
+if <file_name1> != <os_file>
   # check for free size
   <%cmd1> = Parse_cmd -n <node> -r "dir | i free" -t free_disk_space
   <free_space> = <free%cmd1>
   if <free_space> < <File_size>
-    log -m "Disk space is not sufficient"
-    stop
+	log -m "Disk space is not sufficient"
+	stop
   endif
-  # Transferring the file
-  log -m "Disk space is sufficient.. copying the file.."
+  log -m " Disk space is sufficicent, proceeding for file copy"
   <source> = "/var/opt/shared/public/os/<Vendor_type>/<os_file>"
+ 
   file_get -n <node> -s <source> -t <os_file>
-  if <error>
-    log -m "Error while copying the file"
-  endif
-  # copy the file
+ 
 endif
-
-<%cmd2> = Parse_cmd -n <node> -r "verify /md5 <os_path><os_file>" -t md5_check
-<md5_switch_file> = <md5%cmd2>
-if <md5_netyce_file> == <md5_switch_file> 
-  log -m "MD5 verified"
+ 
+ 
+<%cmd2> = parse_cmd -n <node> -r "verify /md5 flash:<os_file>" -t md5_check
+<hash> = <hash%cmd2>
+if <md5> == <hash>
+  log -m "md5 verification is successful"
 else
-  log -m "MD5 verification failed, aborting the job"
+  log -m "md5 verification failed"
   stop
 endif
-#Cmd_exec_basic -n <node> -a <node_addr> -v <vendor_type> -d <domain> -f <node>.cmd <verbose>
+config_create -n <node> -f boot_config.cfg -t boot_config
+#Cmd_exec_basic -n <node> -a <node_addr> -v <vendor_type> -d <domain> -f boot_config.cfg <verbose>
+ 
+<%cmd2> = parse_cmd -n <node> -r "show boot | b next reload" -t boot_check
+<boot_var> = <boot_var%cmd2>
+<man_boot> = <man_boot%cmd2>
+if <boot_var> != "flash:packages.conf;"
+  log -m "boot check failed"
+  stop
+endif
+ 
+if <man_boot> != "no"
+  log -m "boot check failed"
+  stop
+endif
+config_create -n <node> -f install_reload.cfg -t install_reload
+ 
+#Cmd_exec_basic -n <node> -a <node_addr> -v <vendor_type> -d <domain> -f install_reload.cfg <verbose>
+ 
+wait -t 600
+reachable -n <node>
+if <error>
+	wait -t 600
+	reachable -n <node>
+	if <error>
+  	log -m "Node is unreachable, aborting"
+  	stop
+	endif
+endif
+ 
+# Verify the current OS version
+<%cmd1> = parse_cmd -n <node> -r "show version | i Version" -t software_version
+<s_w> = <s_w%cmd1>
+ 
+if <s_w> == <os_version>
+  log -m "OS is upgraded successfully"
+  <sub> = "OS upgrade completed for <node>"
+  task = sendmail_new
+else
+  log -m "OS is not upgraded, aborting"
+  stop
+endif
+
